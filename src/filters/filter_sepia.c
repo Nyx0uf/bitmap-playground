@@ -22,8 +22,7 @@ __kernel void sepia(__global int* input, __global int* output, const size_t coun
 		newGreen = clamp(newGreen, 0, 255);\
 		newBlue = clamp(newBlue, 0, 255);\
 \
-		int n = ((alpha << 24) + (newBlue << 16) + (newGreen << 8) + newRed);\
-		output[i] = n;\
+		output[i] = ((alpha << 24) + (newBlue << 16) + (newGreen << 8) + newRed);\
 		/*printf(\"index[%d]\\n\", (int)i);*/\
 	}\
 }\
