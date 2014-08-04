@@ -1,0 +1,1 @@
+clang -o bmp src/cl/*.c src/filters/*.c src/img/*.c src/misc/*.c src/test/main.c -Isrc/ -lpng -ljpeg -framework OpenCL -Wall
