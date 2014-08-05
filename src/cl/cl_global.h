@@ -37,5 +37,17 @@ cl_context nyx_cl_get_context(void);
  */
 cl_command_queue nyx_cl_get_commandqueue(void);
 
+/**
+ * @brief get the best vector width for integer operations
+ * @returns vector width
+ */
+size_t nyx_cl_get_int_vector_width(void);
+
+/**
+ * @brief get the best vector width for float operations
+ * @returns vector width
+ */
+size_t nyx_cl_get_float_vector_width(void);
+
 
 #endif /* __NYX_CLGLOBAL_H__ */

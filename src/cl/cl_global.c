@@ -5,6 +5,7 @@
 static cl_device_id __device_id = NULL;
 static cl_context __context = NULL;
 static cl_command_queue __commands = NULL;
+static size_t __vector_width[2] = {0};
 static bool __is_init = false;
 
 
@@ -40,7 +41,7 @@ bool nyx_cl_init(void)
 	}
 #endif /* NYX_DEBUG */
 #endif
-	// Connect to a compute device
+	// connect to a compute device
 	err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &__device_id, NULL);
 	if (err != CL_SUCCESS)
 	{
@@ -48,7 +49,7 @@ bool nyx_cl_init(void)
 		return false;
 	}
 
-	// Create a compute context
+	// create a compute context
 #ifdef NYX_DEBUG
 	__context = clCreateContext(0, 1, &__device_id, NULL, clLogMessagesToStdoutAPPLE, &err);
 #else
@@ -61,7 +62,7 @@ bool nyx_cl_init(void)
 		return false;
 	}
 
-	// Create a command commands
+	// create a command commands
 	__commands = clCreateCommandQueue(__context, __device_id, 0, &err);
 	if (!__commands)
 	{
@@ -70,6 +71,10 @@ bool nyx_cl_init(void)
 		__device_id = NULL;
 		return false;
 	}
+
+	// get some global params
+	clGetDeviceInfo(__device_id, CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT, sizeof(size_t), &(__vector_width[0]), NULL);
+	clGetDeviceInfo(__device_id, CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT, sizeof(size_t), &(__vector_width[1]), NULL);
 
 	__is_init = true;
 	return true;
@@ -99,4 +104,16 @@ cl_context nyx_cl_get_context(void)
 cl_command_queue nyx_cl_get_commandqueue(void)
 {
 	return __commands;
+}
+
+size_t nyx_cl_get_int_vector_width(void)
+{
+	//return 1;
+	return __vector_width[0];
+}
+
+size_t nyx_cl_get_float_vector_width(void)
+{
+	//return 1;
+	return __vector_width[1];
 }
