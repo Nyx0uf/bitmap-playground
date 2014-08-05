@@ -5,7 +5,7 @@
 static cl_device_id __device_id = NULL;
 static cl_context __context = NULL;
 static cl_command_queue __commands = NULL;
-static size_t __vector_width[2] = {0};
+static cl_uint __vector_width[2] = {0};
 static bool __is_init = false;
 
 
@@ -73,8 +73,8 @@ bool nyx_cl_init(void)
 	}
 
 	// get some global params
-	clGetDeviceInfo(__device_id, CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT, sizeof(size_t), &(__vector_width[0]), NULL);
-	clGetDeviceInfo(__device_id, CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT, sizeof(size_t), &(__vector_width[1]), NULL);
+	clGetDeviceInfo(__device_id, CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT, sizeof(cl_uint), &(__vector_width[0]), NULL);
+	clGetDeviceInfo(__device_id, CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT, sizeof(cl_uint), &(__vector_width[1]), NULL);
 
 	__is_init = true;
 	return true;
@@ -106,13 +106,13 @@ cl_command_queue nyx_cl_get_commandqueue(void)
 	return __commands;
 }
 
-size_t nyx_cl_get_int_vector_width(void)
+cl_uint nyx_cl_get_int_vector_width(void)
 {
 	//return 1;
 	return __vector_width[0];
 }
 
-size_t nyx_cl_get_float_vector_width(void)
+cl_uint nyx_cl_get_float_vector_width(void)
 {
 	//return 1;
 	return __vector_width[1];
