@@ -23,7 +23,9 @@ bool nyx_scale_bilinear(const bitmap* bm_in, bitmap* bm_out)
 	{
 		for (size_t x = 0; x < out_width; x++)
 		{
-			// formula, where c is a single pixel component (r,g,b,a)
+			// formula, where C is a single pixel component (r,g,b,a), and a, b, c, d are the pixels
+			// |a|b|
+			// |c|d|
 			// C' = aC(1 - w)(1 - h) + bC(w)(1 - h) + cC(h)(1 - w) + dC(wh)
 			i = (size_t)(x_ratio * x);
 			j = (size_t)(y_ratio * y);
