@@ -367,6 +367,9 @@ bool nyx_filter_sepia_opencl2(const bitmap* bm_in, bitmap* bm_out)
 	cl_kernel kernel = NULL;
 	cl_mem input = NULL; // device memory used for the input array
 	cl_mem output = NULL; // device memory used for the output array
+	const size_t origin[3] = {0};
+	const size_t region[3] = {bm_in->width, bm_in->height, 1};
+	const size_t gsize[2] = {bm_in->width, bm_in->height};
 
 	// create the compute program from the source buffer
 	program = clCreateProgramWithSource(context, 1, (const char**)&kernel_filter_sepia_image2d, NULL, &err);
@@ -403,8 +406,8 @@ bool nyx_filter_sepia_opencl2(const bitmap* bm_in, bitmap* bm_out)
 	desc.image_height = bm_in->height;
 	desc.image_depth = 1;
 	desc.image_array_size = 1;
-	desc.image_row_pitch = 0;//bm_in->width * 4;
-	desc.image_slice_pitch = 0;//bm_in->width * bm_in->height * 4;
+	desc.image_row_pitch = 0;
+	desc.image_slice_pitch = 0;
 	desc.num_mip_levels = 0;
 	desc.num_samples = 0;
 	desc.buffer = NULL;
@@ -416,8 +419,7 @@ bool nyx_filter_sepia_opencl2(const bitmap* bm_in, bitmap* bm_out)
 		goto out;
 	}
 
-	size_t origin[3] = {0};
-	size_t region[3] = {bm_in->width, bm_in->height, 1};
+	// enqueue original bitmap
 	clEnqueueWriteImage(commands, input, CL_TRUE, origin, region, 0, 0, bm_in->buffer, 0, NULL, NULL);
 
 	// set the arguments to our compute kernel
@@ -430,8 +432,7 @@ bool nyx_filter_sepia_opencl2(const bitmap* bm_in, bitmap* bm_out)
 		goto out;
 	}
 
-	size_t gsize[2] = {bm_in->width, bm_in->height};
-	//size_t lsize[2] = {16, 16};
+	// execute kernel
 	err = clEnqueueNDRangeKernel(commands, kernel, 2, NULL, gsize, NULL, 0, NULL, NULL);
 	if (err)
 	{
@@ -442,7 +443,7 @@ bool nyx_filter_sepia_opencl2(const bitmap* bm_in, bitmap* bm_out)
 	// wait for the command commands to get serviced before reading back results
 	clFinish(commands);
 
-	// read back the results from the device to verify the output
+	// read back the results from the device
 	err = clEnqueueReadImage(commands, output, CL_TRUE, origin, region, 0, 0, bm_out->buffer, 0, NULL, NULL);
 	if (err != CL_SUCCESS)
 	{

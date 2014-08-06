@@ -53,6 +53,8 @@ bool nyx_scale_nearestneighbor_opencl(const bitmap* bm_in, bitmap* bm_out)
 	const size_t in_height = bm_in->height;
 	const size_t out_width = bm_out->width;
 	const size_t out_height = bm_out->height;
+	const float x_ratio = in_width / (float)out_width;
+	const float y_ratio = in_height / (float)out_height;
 
 	cl_int err;
 	cl_device_id device_id = nyx_cl_get_deviceid();
@@ -62,6 +64,10 @@ bool nyx_scale_nearestneighbor_opencl(const bitmap* bm_in, bitmap* bm_out)
 	cl_kernel kernel = NULL;
 	cl_mem input = NULL; // device memory used for the input array
 	cl_mem output = NULL; // device memory used for the output array
+	const size_t origin[3] = {0};
+	const size_t region_in[3] = {in_width, in_height, 1};
+	const size_t region_out[3] = {out_width, out_height, 1};
+	const size_t gsize[2] = {out_width, out_height};
 
 	// create the compute program from the source buffer
 	program = clCreateProgramWithSource(context, 1, (const char**)&kernel_filter_scale_nearestneighbor, NULL, &err);
@@ -114,8 +120,7 @@ bool nyx_scale_nearestneighbor_opencl(const bitmap* bm_in, bitmap* bm_out)
 		goto out;
 	}
 
-	size_t origin[3] = {0};
-	size_t region_in[3] = {in_width, in_height, 1};
+	// enqueue original bitmap
 	clEnqueueWriteImage(commands, input, CL_TRUE, origin, region_in, 0, 0, bm_in->buffer, 0, NULL, NULL);
 
 	// set the arguments to our compute kernel
@@ -123,8 +128,6 @@ bool nyx_scale_nearestneighbor_opencl(const bitmap* bm_in, bitmap* bm_out)
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input);
 	err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &output);
 	err |= clSetKernelArg(kernel, 2, sizeof(size_t), &in_width);
-	const float x_ratio = in_width / (float)out_width;
-	const float y_ratio = in_height / (float)out_height;
 	err |= clSetKernelArg(kernel, 3, sizeof(float), &x_ratio);
 	err |= clSetKernelArg(kernel, 4, sizeof(float), &y_ratio);
 	if (err != CL_SUCCESS)
@@ -133,7 +136,7 @@ bool nyx_scale_nearestneighbor_opencl(const bitmap* bm_in, bitmap* bm_out)
 		goto out;
 	}
 
-	size_t gsize[2] = {out_width, out_height};
+	// execute kernel
 	err = clEnqueueNDRangeKernel(commands, kernel, 2, NULL, gsize, NULL, 0, NULL, NULL);
 	if (err)
 	{
@@ -144,8 +147,7 @@ bool nyx_scale_nearestneighbor_opencl(const bitmap* bm_in, bitmap* bm_out)
 	// wait for the command commands to get serviced before reading back results
 	clFinish(commands);
 
-	// read back the results from the device to verify the output
-	size_t region_out[3] = {out_width, out_height, 1};
+	// read back the results from the device
 	err = clEnqueueReadImage(commands, output, CL_TRUE, origin, region_out, 0, 0, bm_out->buffer, 0, NULL, NULL);
 	if (err != CL_SUCCESS)
 	{
