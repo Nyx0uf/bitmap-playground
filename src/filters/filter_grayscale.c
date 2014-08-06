@@ -269,7 +269,7 @@ bool nyx_filter_grayscale_opencl(const bitmap* bm_in, bitmap* bm_out)
 	// wait for the command commands to get serviced before reading back results
 	clFinish(commands);
 
-	// read back the results from the device to verify the output
+	// read back the results from the device
 	err = clEnqueueReadBuffer(commands, output, CL_TRUE, 0, bm_size, bm_out->buffer, 0, NULL, NULL);
 	if (err != CL_SUCCESS)
 	{
