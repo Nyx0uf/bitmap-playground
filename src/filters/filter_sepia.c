@@ -1,8 +1,9 @@
 #include "filter_sepia.h"
 #include "cl/cl_global.h"
+#include <math.h>
 
 
-static const char* kernel_filter_sepia = "\
+static const char* kernel_filter_sepia1 = "\
 __kernel void sepia(__global int* input, __global int* output, const size_t count)\
 {\
 	const size_t i = get_global_id(0);\
@@ -23,7 +24,106 @@ __kernel void sepia(__global int* input, __global int* output, const size_t coun
 		newBlue = clamp(newBlue, 0, 255);\
 \
 		output[i] = ((alpha << 24) + (newBlue << 16) + (newGreen << 8) + newRed);\
-		/*printf(\"index[%d]\\n\", (int)i);*/\
+	}\
+}\
+";
+
+static const char* kernel_filter_sepia2 = "\
+__kernel void sepia(__global int2* input, __global int2* output, const size_t count)\
+{\
+	const size_t i = get_global_id(0);\
+	if (i < count)\
+	{\
+		const int2 cur_pixel = input[i];\
+		int2 red = cur_pixel & 0xFF;\
+		int2 green = (cur_pixel >> 8) & 0xFF;\
+		int2 blue = (cur_pixel >> 16) & 0xFF;\
+		int2 alpha = (cur_pixel >> 24) & 0xFF;\
+\
+		int2 newRed = convert_int2(fma(convert_float2(red), (float2)0.393f, fma(convert_float2(green), (float2)0.769f, fma(convert_float2(blue), (float2)0.189f, (float2)0.0f))));\
+		int2 newGreen = convert_int2(fma(convert_float2(red), (float2)0.349f, fma(convert_float2(green), (float2)0.686f, fma(convert_float2(blue), (float2)0.168f, (float2)0.0f))));\
+		int2 newBlue = convert_int2(fma(convert_float2(red), (float2)0.272f, fma(convert_float2(green), (float2)0.534f, fma(convert_float2(blue), (float2)0.131f, (float2)0.0f))));\
+\
+		newRed = clamp(newRed, (int2)0, (int2)255);\
+		newGreen = clamp(newGreen, (int2)0, (int2)255);\
+		newBlue = clamp(newBlue, (int2)0, (int2)255);\
+\
+		output[i] = ((alpha << 24) + (newBlue << 16) + (newGreen << 8) + newRed);\
+	}\
+}\
+";
+
+static const char* kernel_filter_sepia4 = "\
+__kernel void sepia(__global int4* input, __global int4* output, const size_t count)\
+{\
+	const size_t i = get_global_id(0);\
+	if (i < count)\
+	{\
+		const int4 cur_pixel = input[i];\
+		int4 red = cur_pixel & 0xFF;\
+		int4 green = (cur_pixel >> 8) & 0xFF;\
+		int4 blue = (cur_pixel >> 16) & 0xFF;\
+		int4 alpha = (cur_pixel >> 24) & 0xFF;\
+\
+		int4 newRed = convert_int4(fma(convert_float4(red), (float4)0.393f, fma(convert_float4(green), (float4)0.769f, fma(convert_float4(blue), (float4)0.189f, (float4)0.0f))));\
+		int4 newGreen = convert_int4(fma(convert_float4(red), (float4)0.349f, fma(convert_float4(green), (float4)0.686f, fma(convert_float4(blue), (float4)0.168f, (float4)0.0f))));\
+		int4 newBlue = convert_int4(fma(convert_float4(red), (float4)0.272f, fma(convert_float4(green), (float4)0.534f, fma(convert_float4(blue), (float4)0.131f, (float4)0.0f))));\
+\
+		newRed = clamp(newRed, (int4)0, (int4)255);\
+		newGreen = clamp(newGreen, (int4)0, (int4)255);\
+		newBlue = clamp(newBlue, (int4)0, (int4)255);\
+\
+		output[i] = ((alpha << 24) + (newBlue << 16) + (newGreen << 8) + newRed);\
+	}\
+}\
+";
+
+static const char* kernel_filter_sepia8 = "\
+__kernel void sepia(__global int8* input, __global int8* output, const size_t count)\
+{\
+	const size_t i = get_global_id(0);\
+	if (i < count)\
+	{\
+		const int8 cur_pixel = input[i];\
+		int8 red = cur_pixel & 0xFF;\
+		int8 green = (cur_pixel >> 8) & 0xFF;\
+		int8 blue = (cur_pixel >> 16) & 0xFF;\
+		int8 alpha = (cur_pixel >> 24) & 0xFF;\
+\
+		int8 newRed = convert_int8(fma(convert_float8(red), (float8)0.393f, fma(convert_float8(green), (float8)0.769f, fma(convert_float8(blue), (float8)0.189f, (float8)0.0f))));\
+		int8 newGreen = convert_int8(fma(convert_float8(red), (float8)0.349f, fma(convert_float8(green), (float8)0.686f, fma(convert_float8(blue), (float8)0.168f, (float8)0.0f))));\
+		int8 newBlue = convert_int8(fma(convert_float8(red), (float8)0.272f, fma(convert_float8(green), (float8)0.534f, fma(convert_float8(blue), (float8)0.131f, (float8)0.0f))));\
+\
+		newRed = clamp(newRed, (int8)0, (int8)255);\
+		newGreen = clamp(newGreen, (int8)0, (int8)255);\
+		newBlue = clamp(newBlue, (int8)0, (int8)255);\
+\
+		output[i] = ((alpha << 24) + (newBlue << 16) + (newGreen << 8) + newRed);\
+	}\
+}\
+";
+
+static const char* kernel_filter_sepia16 = "\
+__kernel void sepia(__global int16* input, __global int16* output, const size_t count)\
+{\
+	const size_t i = get_global_id(0);\
+	if (i < count)\
+	{\
+		const int16 cur_pixel = input[i];\
+		int16 red = cur_pixel & 0xFF;\
+		int16 green = (cur_pixel >> 8) & 0xFF;\
+		int16 blue = (cur_pixel >> 16) & 0xFF;\
+		int16 alpha = (cur_pixel >> 24) & 0xFF;\
+\
+		int16 newRed = convert_int16(fma(convert_float16(red), (float16)0.393f, fma(convert_float16(green), (float16)0.769f, fma(convert_float16(blue), (float16)0.189f, (float16)0.0f))));\
+		int16 newGreen = convert_int16(fma(convert_float16(red), (float16)0.349f, fma(convert_float16(green), (float16)0.686f, fma(convert_float16(blue), (float16)0.168f, (float16)0.0f))));\
+		int16 newBlue = convert_int16(fma(convert_float16(red), (float16)0.272f, fma(convert_float16(green), (float16)0.534f, fma(convert_float16(blue), (float16)0.131f, (float16)0.0f))));\
+\
+		newRed = clamp(newRed, (int16)0, (int16)255);\
+		newGreen = clamp(newGreen, (int16)0, (int16)255);\
+		newBlue = clamp(newBlue, (int16)0, (int16)255);\
+\
+		output[i] = ((alpha << 24) + (newBlue << 16) + (newGreen << 8) + newRed);\
 	}\
 }\
 ";
@@ -42,8 +142,12 @@ __kernel void sepia(__read_only image2d_t input, __write_only image2d_t output)\
 ";
 
 /* just stfu clang */
+#pragma unused(kernel_filter_sepia1)
+#pragma unused(kernel_filter_sepia2)
+#pragma unused(kernel_filter_sepia4)
+#pragma unused(kernel_filter_sepia8)
+#pragma unused(kernel_filter_sepia16)
 #pragma unused(kernel_filter_sepia_image2d)
-#pragma unused(kernel_filter_sepia)
 
 
 bool nyx_filter_sepia(const bitmap* bm_in, bitmap* bm_out)
@@ -111,6 +215,9 @@ bool nyx_filter_sepia_opencl(const bitmap* bm_in, bitmap* bm_out)
 	if ((width != bm_out->width) && (height != bm_out->height))
 		return false;
 
+	const size_t bm_wh = width * height;
+	const size_t bm_size = bm_wh * sizeof(int);
+
 	cl_int err;
 	size_t global; // global domain size for our calculation
 	size_t local; // local domain size for our calculation
@@ -121,9 +228,33 @@ bool nyx_filter_sepia_opencl(const bitmap* bm_in, bitmap* bm_out)
 	cl_kernel kernel = NULL;
 	cl_mem input = NULL; // device memory used for the input array
 	cl_mem output = NULL; // device memory used for the output array
+	const cl_uint vec_width = nyx_cl_get_int_vector_width();
+	const size_t wrk_count = (size_t)ceilf(bm_wh / (float)vec_width);
 
 	// create the compute program from the source buffer
-	program = clCreateProgramWithSource(context, 1, (const char**)&kernel_filter_sepia, NULL, &err);
+	char* filter_kernel = NULL;
+	switch (vec_width)
+	{
+		case 1:
+			filter_kernel = (char*)kernel_filter_sepia1;
+			break;
+		case 2:
+			filter_kernel = (char*)kernel_filter_sepia2;
+			break;
+		case 4:
+			filter_kernel = (char*)kernel_filter_sepia4;
+			break;
+		case 8:
+			filter_kernel = (char*)kernel_filter_sepia8;
+			break;
+		case 16:
+			filter_kernel = (char*)kernel_filter_sepia16;
+			break;
+		default:
+			filter_kernel = (char*)kernel_filter_sepia1;
+			break;
+	}
+	program = clCreateProgramWithSource(context, 1, (const char**)&filter_kernel, NULL, &err);
 	if (!program)
 	{
 		NYX_ERRLOG("[!] Error: Failed to create compute program (%d)\n", err);
@@ -150,9 +281,8 @@ bool nyx_filter_sepia_opencl(const bitmap* bm_in, bitmap* bm_out)
 	}
 
 	// create the input and output arrays in device memory for our calculation
-	const size_t size = bm_in->width * bm_in->height;
-	input = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * size, NULL, NULL);
-	output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * size, NULL, NULL);
+	input = clCreateBuffer(context, CL_MEM_READ_ONLY, bm_size, NULL, NULL);
+	output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, bm_size, NULL, NULL);
 	if ((!input) || (!output))
 	{
 		NYX_ERRLOG("[!] Error: Failed to allocate device memory (%d)\n", err);
@@ -160,7 +290,7 @@ bool nyx_filter_sepia_opencl(const bitmap* bm_in, bitmap* bm_out)
 	}
 
 	// write our data set into the input array in device memory
-	err = clEnqueueWriteBuffer(commands, input, CL_TRUE, 0, sizeof(int) * size, bm_in->buffer, 0, NULL, NULL);
+	err = clEnqueueWriteBuffer(commands, input, CL_TRUE, 0, bm_size, bm_in->buffer, 0, NULL, NULL);
 	if (err != CL_SUCCESS)
 	{
 		NYX_ERRLOG("[!] Error: Failed to write to source array (%d)\n", err);
@@ -171,8 +301,7 @@ bool nyx_filter_sepia_opencl(const bitmap* bm_in, bitmap* bm_out)
 	err = 0;
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input);
 	err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &output);
-	size_t bla = size * 4;
-	err |= clSetKernelArg(kernel, 2, sizeof(size_t), &bla);
+	err |= clSetKernelArg(kernel, 2, sizeof(size_t), &wrk_count);
 	if (err != CL_SUCCESS)
 	{
 		NYX_ERRLOG("Error: Failed to set kernel arguments (%d)\n", err);
@@ -189,7 +318,7 @@ bool nyx_filter_sepia_opencl(const bitmap* bm_in, bitmap* bm_out)
 
 	// execute the kernel over the entire range of our 1d input data set
 	// using the maximum number of work group items for this device
-	global = size;
+	global = wrk_count;
 	// pad
 	while ((global % local) != 0)
 		global++;
@@ -204,8 +333,7 @@ bool nyx_filter_sepia_opencl(const bitmap* bm_in, bitmap* bm_out)
 	clFinish(commands);
 
 	// read back the results from the device to verify the output
-	int* results = (int*)bm_out->buffer;
-	err = clEnqueueReadBuffer(commands, output, CL_TRUE, 0, sizeof(int) * size, results, 0, NULL, NULL);
+	err = clEnqueueReadBuffer(commands, output, CL_TRUE, 0, bm_size, bm_out->buffer, 0, NULL, NULL);
 	if (err != CL_SUCCESS)
 	{
 		NYX_ERRLOG("[!] Error: Failed to read output array (%d)\n", err);
