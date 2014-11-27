@@ -2,9 +2,11 @@
 #include <dirent.h>
 #include <string.h>
 #include "cl/cl_global.h"
+#include "filters/filter_grayscale.h"
 #include "filters/filter_sepia.h"
 #include "filters/scale_bilinear.h"
 #include "filters/scale_nearestneighbor.h"
+#include "filters/crop.h"
 #include "img/img_writer.h"
 
 
@@ -22,7 +24,7 @@ int main(int argc, const char* argv[])
 		goto out;
 	}
 
-	bm_in = nyx_bm_create_from_file("/Users/nyxouf/Desktop/bla1.png");
+	bm_in = nyx_bm_create_from_file("/Users/nyxouf/Dropbox/Public/klk.jpg");
 	//bm_in = nyx_bm_create_from_file("/Users/nyxouf/Desktop/bla4.jpg");
 	if (!bm_in)
 	{
@@ -32,7 +34,10 @@ int main(int argc, const char* argv[])
 	}
 
 	//bm_out = nyx_bm_alloc(bm_in->width, bm_in->height, NULL);
-	bm_out = nyx_bm_alloc(bm_in->width / 2, bm_in->height / 2, NULL);
+	//bm_out = nyx_bm_alloc(bm_in->width / 2, bm_in->height / 2, NULL);
+	const rect r = (rect){.origin.x = 0, .origin.y = 0, .size.w = 640, .size.h = 360};
+	bm_out = nyx_bm_alloc(r.size.w, r.size.h, NULL);
+
 	if (!bm_out)
 	{
 		NYX_ERRLOG("[!] Can't alloc bitmap out\n");
@@ -46,13 +51,20 @@ int main(int argc, const char* argv[])
 	begin = clock();
 	for (size_t i = 0; i < 10; i++)
 	{
+		//ok = nyx_filter_grayscale(bm_in, bm_out);
+		//ok = nyx_filter_grayscale_opencl(bm_in, bm_out);
+
 		//ok = nyx_filter_sepia(bm_in, bm_out);
 		//ok = nyx_filter_sepia_opencl(bm_in, bm_out);
 
 		//ok = nyx_scale_nearestneighbor(bm_in, bm_out);
-		ok = nyx_scale_nearestneighbor_opencl(bm_in, bm_out);
+		//ok = nyx_scale_nearestneighbor_opencl(bm_in, bm_out);
 
 		//ok = nyx_scale_bilinear(bm_in, bm_out);
+
+		//ok = nyx_scale_bicubic(bm_in, bm_out);
+
+		ok = nyx_crop(bm_in, r, bm_out);
 	}
 	end = clock();
 	fprintf(stdout, "[+] Time: %fs (%d)\n", ((double)(end - begin) / CLOCKS_PER_SEC), (int)ok);
