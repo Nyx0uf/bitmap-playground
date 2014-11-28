@@ -79,7 +79,6 @@ typedef struct _nyx_rect_struct {
 size_t nyx_num_components_for_colorspace(const colorspace_t colorspace);
 
 
-
 /* Minimun value for a pixel component */
 #define NYX_MIN_PIXEL_COMPONENT_VALUE ((uint8_t)0)
 /* Maximum value for a pixel component */
@@ -102,10 +101,13 @@ size_t nyx_num_components_for_colorspace(const colorspace_t colorspace);
 #define NYX_RGBA_GET_A(RGBA) ((RGBA >> 24) & 0xFF)
 #define NYX_RGBA_MAKE(R, G, B, A) ((A << 24) + (B << 16) + (G << 8) + R)
 
-/* */
+/* Geometry stuff */
 #define NYX_EQUAL_POINTS(P1, P2) ((P1.x == P2.x) && (P1.y == P2.y))
 #define NYX_EQUAL_SIZES(S1, S2) ((S1.w == S2.w) && (S1.h == S2.h))
 #define NYX_EQUAL_RECTS(R1, R2) ((NYX_EQUAL_POINTS(R1.origin, R2.origin)) && (NYX_EQUAL_SIZES(R1.size, R2.size)))
+#define NYX_RECT_GET_MAX_X(R) (R.origin.x + R.size.w)
+#define NYX_RECT_GET_MAX_Y(R) (R.origin.y + R.size.h)
+#define NYX_POINT_IN_RECT(R, P) ((P.x >= R.origin.x) && (P.x <= (NYX_RECT_GET_MAX_X(R))) && (P.y >= R.origin.y) && (P.y <= (NYX_RECT_GET_MAX_Y(R))))
 
 
 #endif /* __NYX_GLOBAL_H__ */

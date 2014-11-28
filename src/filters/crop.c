@@ -7,8 +7,8 @@ bool nyx_crop(const bitmap* bm_in, const rect crop_rect, bitmap* bm_out)
 		return false;
 
 	// Check if the cropped rect doesn't overflow from the original bitmap
-	const size_t xw = crop_rect.origin.x + crop_rect.size.w;
-	const size_t yh = crop_rect.origin.y + crop_rect.size.h;
+	const size_t xw = NYX_RECT_GET_MAX_X(crop_rect);
+	const size_t yh = NYX_RECT_GET_MAX_Y(crop_rect);
 	const size_t width = bm_in->width;
 	if ((xw > width) || (yh > bm_in->height))
 		return false;
