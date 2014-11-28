@@ -24,9 +24,7 @@ bool nyx_crop(const bitmap* bm_in, const rect crop_rect, bitmap* bm_out)
 		for (size_t x = crop_rect.origin.x; x < xw; x++)
 		{
 			size_t index = x + y * width;
-			*out_ptr = in_ptr[index];
-			// next pixel
-			out_ptr++;
+			*out_ptr++ = in_ptr[index];
 		}
 	}
 
