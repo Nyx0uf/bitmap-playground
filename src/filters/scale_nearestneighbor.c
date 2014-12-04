@@ -4,13 +4,14 @@
 
 
 static const char* kernel_filter_scale_nearestneighbor = "\
+__constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;\
 __kernel void nearestneighbor(__read_only image2d_t input, __write_only image2d_t output, const size_t in_width, const float x_ratio, const float y_ratio)\
 {\
 	const int2 pos_out = {get_global_id(0), get_global_id(1)};\
 	float px = floor(pos_out.x * x_ratio);\
 	float py = floor(pos_out.y * y_ratio);\
 	const int2 pos_in = {(int)px, (int)py};\
-	uint4 in = read_imageui(input, pos_in);\
+	uint4 in = read_imageui(input, sampler, pos_in);\
 	write_imageui(output, pos_out, in);\
 }\
 ";
