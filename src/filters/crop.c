@@ -18,7 +18,7 @@ bool nyx_crop(const bitmap* bm_in, const rect crop_rect, bitmap* bm_out)
 	if (!NYX_EQUAL_SIZES(tmp_s, crop_rect.size))
 		return false;
 	
-	rgba_pixel* in_ptr = (rgba_pixel*)bm_in->buffer, *out_ptr = (rgba_pixel*)bm_out->buffer;
+	int* in_ptr = (int*)bm_in->buffer, *out_ptr = (int*)bm_out->buffer;
 	for (size_t y = crop_rect.origin.y; y < yh; y++)
 	{
 		for (size_t x = crop_rect.origin.x; x < xw; x++)
